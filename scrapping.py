@@ -22,7 +22,8 @@ def extraer_juegos():
         cover = juego.find("img",class_="picture")['src']
         
         price = juego.find("div",class_="price").text
-        price= price.strip("\n")
+        price= price.strip("\n").strip("€")
+        print(price)
 
         link_juego= juego.find("a",class_="cover")['href']
         req=Request(link_juego,headers=hdr)
