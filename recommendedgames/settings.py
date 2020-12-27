@@ -1,3 +1,4 @@
+#encoding:utf-8
 """
 Django settings for recommendedgames project.
 
@@ -11,6 +12,7 @@ https://docs.djangoproject.com/en/3.1/ref/settings/
 """
 
 from pathlib import Path
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -37,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'main'
 ]
 
 MIDDLEWARE = [
@@ -103,7 +106,7 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/3.1/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'es-ES'
 
 TIME_ZONE = 'UTC'
 
@@ -118,3 +121,9 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
 
 STATIC_URL = '/static/'
+
+#directorio donde se suben objetos multimedia (im�genes, etc...)
+#importante: este directorio hay que crearlo manualmente
+MEDIA_ROOT = os.path.join(BASE_DIR,'images')
+#para acceder desde la url al directorio multimedia (p.e.- http://localhost:8000/media/covers/XXXXXXXXXX.jpg)
+MEDIA_URL ='/media/'
