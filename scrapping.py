@@ -23,7 +23,7 @@ def extraer_juegos():
         
         price = juego.find("div",class_="price").text
         price= price.strip("\n").strip("€")
-        print(price)
+        
 
         link_juego= juego.find("a",class_="cover")['href']
         req=Request(link_juego,headers=hdr)
@@ -33,6 +33,11 @@ def extraer_juegos():
         tags = s.find("div",class_="tags").find_all("a")
         tags = [tag.text for tag in tags]
         
+        description= s.find("div",class_ ="description").text
+        if(len(description)>=500):
+            description = description[:495]+"[...]"
+        print(description,"TAMAÑO: ",len(description), "\n\n")
+
         release = s.find("div",class_="release").find("span").text
 
         juegos.append((titulo,cover,tags,price,release))

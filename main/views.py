@@ -40,7 +40,11 @@ def populateDB():
         
         tags = s.find("div",class_="tags").find_all("a")
         tags = [tag.text for tag in tags]
-        
+
+        description= s.find("div",class_ ="description").text
+        if(len(description)>=500):
+            description = description[:495]+"[...]"
+
         release = s.find("div",class_="release").find("span").text
         # Idioma "es-ES" (código para el español de España)
         locale.setlocale(locale.LC_ALL, '') 
@@ -54,7 +58,7 @@ def populateDB():
             if creado:
                 num_generos = num_generos+1
         
-        j = Juego.objects.create(titulo=titulo,cover_path=cover,release=release,precio=price)
+        j = Juego.objects.create(titulo=titulo,cover_path=cover,description=description,release=release,precio=price)
         
         for g in lista_generos_obj:
             j.generos.add(g)
