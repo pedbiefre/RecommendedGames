@@ -21,5 +21,6 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('',views.inicio),
     path('carga/',views.carga),
-    path('juegos/',views.lista_juegos)
+    path('juegos/',views.lista_juegos),
+    path('busquedatitulo/',views.buscar_juegoportitulo)
 ]

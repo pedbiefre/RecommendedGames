@@ -4,7 +4,12 @@ from django.shortcuts import render,redirect
 from bs4 import BeautifulSoup
 from urllib.request import Request, urlopen
 from datetime import datetime
-import locale
+import locale, os, shutil
+from whoosh.index import create_in,open_dir
+from whoosh.fields import KEYWORD, Schema, TEXT, DATETIME, ID, NUMERIC
+from whoosh.qparser import QueryParser, MultifieldParser
+from whoosh import qparser
+from main.forms import BusquedaPorTituloForm
 
 #aqui hacemos el scraping web y cargamos datos a la bd
 def populateDB():
@@ -23,10 +28,10 @@ def populateDB():
     s = BeautifulSoup(page,"lxml")
     
     all_link_juegos = s.find("div", class_= "search-wrapper").find("div",class_="search").findAll("div",class_="item")
-    
+    juegos=[]
     for juego in all_link_juegos:
         
-        titulo = juego.find("div",class_="name").text    
+        title = juego.find("div",class_="name").text    
 
         cover = juego.find("img",class_="picture")['src']
         
@@ -41,7 +46,11 @@ def populateDB():
         tags = s.find("div",class_="tags").find_all("a")
         tags = [tag.text for tag in tags]
 
-        description= s.find("div",class_ ="description").text
+        try:
+            description= s.find("div",class_ ="description").text
+        except:
+            description="Este juego no dispone de descripción"
+
         if(len(description)>=500):
             description = description[:495]+"[...]"
 
@@ -58,20 +67,47 @@ def populateDB():
             if creado:
                 num_generos = num_generos+1
         
-        j = Juego.objects.create(titulo=titulo,cover_path=cover,description=description,release=release,precio=price)
+        j = Juego.objects.create(titulo=title,cover_path=cover,description=description,release=release,precio=price)
+        juegos.append((title,cover,description,release,price,lista_generos_obj))
         
         for g in lista_generos_obj:
             j.generos.add(g)
         num_juegos = num_juegos + 1
 
         
-    return ((num_juegos,num_generos))
+    return ((num_juegos,num_generos,juegos))
 
 #carga los datos desde la web en BD
 def carga(request):
     if request.method=='POST':
         if 'Aceptar' in request.POST:
-            num_juegos, num_generos = populateDB()
+            schem = Schema(titulo=TEXT(stored=True),caratula=TEXT(stored=True),descripcion=TEXT(stored=True),
+            release=DATETIME(stored=True),precio=NUMERIC(stored=True),generos=KEYWORD(stored=True,scorable=True,commas=True))
+
+            #si existe indice, eliminamos
+            if(os.path.exists("Index")):
+                shutil.rmtree("Index")
+            os.mkdir("Index")
+
+            ix = create_in("Index",schema=schem)
+
+            writer = ix.writer()
+            i=0
+            num_juegos, num_generos,juegos = populateDB()
+            
+            for juego in juegos:
+                lista_generos_separados_por_comas=""
+                for genero in juego[5]:
+                    lista_generos_separados_por_comas+str(genero)+","
+                #eliminamos la ultima coma de lista_generos_separados_por_comas 
+                lista_generos_separados_por_comas = lista_generos_separados_por_comas[:-1]
+
+                writer.add_document(titulo=str(juego[0]),caratula=juego[1],descripcion=juego[2],
+                release=juego[3],precio=float(juego[4]),generos=lista_generos_separados_por_comas)
+                i= i + 1
+            writer.commit()
+
+            print("Se han indexado "+ str(i) +" juegos en el índice de whoosh.")
             mensaje = "Se han almacenado: " +str(num_juegos) + " juegos y " +str(num_generos)+ " géneros."
             return render(request, 'cargaBD.html', {'mensaje':mensaje})
         else:
@@ -88,3 +124,21 @@ def inicio(request):
 def lista_juegos(request):
     juegos = Juego.objects.all()
     return render(request,'juegos.html',{'juegos':juegos})
+
+def buscar_juegoportitulo(request):
+    formulario = BusquedaPorTituloForm()
+    juegos=None
+    if request.method == 'POST':
+        formulario = BusquedaPorTituloForm(request.POST)
+        if formulario.is_valid():
+            ix = open_dir("Index")
+            with ix.searcher() as searcher:
+                query = QueryParser("titulo",ix.schema).parse(formulario.cleaned_data['titulo'])
+                result = searcher.search(query)
+                juegos=[]
+                for r in result:
+                    aux={"titulo": r["titulo"],"caratula":r["caratula"],"descripcion":r["descripcion"]
+                    ,"release":r["release"],"precio":r["precio"],"generos":r["generos"]}
+                    juegos.append(aux)
+    
+    return render(request, 'juegobusquedaportitulo.html', {'formulario':formulario, 'juegos':juegos})
