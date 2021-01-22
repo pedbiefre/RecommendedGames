@@ -22,5 +22,6 @@ urlpatterns = [
     path('',views.inicio),
     path('carga/',views.carga),
     path('juegos/',views.lista_juegos),
-    path('busquedatitulo/',views.buscar_juegoportitulo)
+    path('busquedatitulo/',views.buscar_juegoportitulo),
+    path('busquedagenero/',views.buscar_juegosporgenero)
 ]

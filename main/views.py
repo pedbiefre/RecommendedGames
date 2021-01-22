@@ -6,10 +6,10 @@ from urllib.request import Request, urlopen
 from datetime import datetime
 import locale, os, shutil
 from whoosh.index import create_in,open_dir
-from whoosh.fields import KEYWORD, Schema, TEXT, DATETIME, ID, NUMERIC
-from whoosh.qparser import QueryParser, MultifieldParser
+from whoosh.fields import KEYWORD, Schema, TEXT, DATETIME, NUMERIC
+from whoosh.qparser import QueryParser, SingleQuotePlugin
 from whoosh import qparser
-from main.forms import BusquedaPorTituloForm
+from main.forms import BusquedaPorTituloForm, BusquedaPorGeneroForm, BusquedaPorFechaForm
 
 #aqui hacemos el scraping web y cargamos datos a la bd
 def populateDB():
@@ -68,7 +68,7 @@ def populateDB():
                 num_generos = num_generos+1
         
         j = Juego.objects.create(titulo=title,cover_path=cover,description=description,release=release,precio=price)
-        juegos.append((title,cover,description,release,price,lista_generos_obj))
+        juegos.append((title,cover,description,release,price,tags))
         
         for g in lista_generos_obj:
             j.generos.add(g)
@@ -96,14 +96,9 @@ def carga(request):
             num_juegos, num_generos,juegos = populateDB()
             
             for juego in juegos:
-                lista_generos_separados_por_comas=""
-                for genero in juego[5]:
-                    lista_generos_separados_por_comas+str(genero)+","
-                #eliminamos la ultima coma de lista_generos_separados_por_comas 
-                lista_generos_separados_por_comas = lista_generos_separados_por_comas[:-1]
-
+                print(juego[5])
                 writer.add_document(titulo=str(juego[0]),caratula=juego[1],descripcion=juego[2],
-                release=juego[3],precio=float(juego[4]),generos=lista_generos_separados_por_comas)
+                release=juego[3],precio=float(juego[4]),generos=str(",".join(juego[5])))
                 i= i + 1
             writer.commit()
 
@@ -125,6 +120,7 @@ def lista_juegos(request):
     juegos = Juego.objects.all()
     return render(request,'juegos.html',{'juegos':juegos})
 
+#Busca un listado de juegos con el titulo introducido usando whoosh
 def buscar_juegoportitulo(request):
     formulario = BusquedaPorTituloForm()
     juegos=None
@@ -142,3 +138,33 @@ def buscar_juegoportitulo(request):
                     juegos.append(aux)
     
     return render(request, 'juegobusquedaportitulo.html', {'formulario':formulario, 'juegos':juegos})
+
+#Busca juegos por genero usando whoosh
+def buscar_juegosporgenero(request):
+    formulario = BusquedaPorGeneroForm()
+    juego=[]
+    
+    if request.method=='POST':
+        formulario = BusquedaPorGeneroForm(request.POST)      
+        if formulario.is_valid():
+            ix = open_dir("Index")
+            with ix.searcher() as searcher:
+
+                query_gen="'"
+                cont = len(formulario.cleaned_data['genero'])
+                for id_gen in formulario.cleaned_data['genero']:
+                    genero=Genero.objects.get(id=id_gen).nombre
+                    if(cont==1):
+                        query_gen += genero+"'"
+                    else:
+                        query_gen += genero + "' '"
+                    cont = cont-1
+
+                query = QueryParser("generos",ix.schema,plugins=[SingleQuotePlugin]).parse(query_gen)
+                result = searcher.search(query)
+                for r in result:
+                    aux={"titulo": r["titulo"],"caratula":r["caratula"],"descripcion":r["descripcion"]
+                    ,"release":r["release"],"precio":r["precio"],"generos":r["generos"]}
+                    juego.append(aux)
+            
+    return render(request, 'juegosbusquedaporgenero.html', {'formulario':formulario, 'juegos':juego})
