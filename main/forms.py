@@ -13,4 +13,5 @@ class BusquedaPorGeneroForm(forms.Form):
     genero = forms.MultipleChoiceField(label="Seleccione el/los género/s", choices=lista)
     
 class BusquedaPorFechaForm(forms.Form):
-    fecha = forms.DateField(label="Fecha (Formato dd/mm/yyyy)", widget=forms.DateInput(format='%d/%m/%Y'), required=True)
+    fecha_inicio = forms.DateField(label="Fecha Inicio(Formato dd/mm/yyyy)", widget=forms.DateInput(format='%d/%m/%Y'), required=True)
+    fecha_fin = forms.DateField(label="Fecha Fin(Formato dd/mm/yyyy)", widget=forms.DateInput(format='%d/%m/%Y'), required=True)

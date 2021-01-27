@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 
 {% block encabezado %}
-<h1> Busqueda de Juegos por Generos </h1>
+<h1> Busqueda de Juegos por Fecha </h1>
 {% endblock %}
 
 {% block contenido %}
@@ -12,8 +12,8 @@
     		<input type='submit' value='Realizar Búsqueda'/>
     	</form>
 	    
-		<hr>
-		
+        <hr>
+        
 	    {% if juegos %}
 		    <h3> Total de Juegos que coinciden con la búsqueda:  {{ juegos|length }}</h3>
 

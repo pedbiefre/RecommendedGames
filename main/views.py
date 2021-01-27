@@ -168,3 +168,26 @@ def buscar_juegosporgenero(request):
                     juego.append(aux)
             
     return render(request, 'juegosbusquedaporgenero.html', {'formulario':formulario, 'juegos':juego})
+
+#Busqueda juegos por fecha usando whoosh
+def buscar_juegosporfecha(request):
+    formulario = BusquedaPorFechaForm()
+    juegos=[]
+    if request.method == 'POST':
+        formulario = BusquedaPorFechaForm(request.POST)
+        if formulario.is_valid():
+            fecha_inicio = formulario.cleaned_data['fecha_inicio']
+            fecha_fin = formulario.cleaned_data['fecha_fin']
+            myquery ='{'+ str(fecha_inicio) + 'TO'+ str(fecha_fin) + ']' 
+            ix = open_dir("Index")
+            with ix.searcher() as searcher:
+                query = QueryParser("release",ix.schema).parse(myquery)
+                result = searcher.search(query,limit=200)
+                juegos=[]
+                for r in result:
+                    aux={"titulo": r["titulo"],"caratula":r["caratula"],"descripcion":r["descripcion"]
+                    ,"release":r["release"],"precio":r["precio"],"generos":r["generos"]}
+                    juegos.append(aux)
+    
+    return render(request, 'juegosbusquedaporfecha.html', {'formulario':formulario, 'juegos':juegos})
+
