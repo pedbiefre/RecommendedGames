@@ -13,6 +13,7 @@ class Juego(models.Model):
     #del directorio 'carga'. El directorio 'carga' se indica en MEDIA_ROOT (mirar settings.py)
     cover = models.ImageField(upload_to='covers', verbose_name='Carátula')
     cover_path = models.CharField(max_length=200,verbose_name='Carátula')
+    description = models.CharField(max_length=500, verbose_name='Descripción')
     release= models.DateField(verbose_name='Fecha de lanzamiento')
     precio = models.DecimalField(max_digits=5,decimal_places=2,verbose_name='Precio')
     generos = models.ManyToManyField(Genero)
