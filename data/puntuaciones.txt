@@ -1,0 +1,7 @@
+1,No Man's Sky,8
+1,The Elder Scrolls V: Skyrim Special Edition,9
+1,Dark Souls Remastered,10
+1,Dark Souls 3 Deluxe Edition,9
+1,Hunt Showdown,5
+1,Dying Light,6
+1,Green Hell,8

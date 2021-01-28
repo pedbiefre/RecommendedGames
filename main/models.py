@@ -1,5 +1,7 @@
 #encoding: utf-8
 from django.db import models
+from django.contrib.auth.models import User
+
 
 class Genero(models.Model):
     nombre = models.CharField(max_length=30, verbose_name= 'Género')
@@ -20,4 +22,11 @@ class Juego(models.Model):
 
     def __str__(self):
         return self.titulo
-    
+
+class Puntuacion(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    juego = models.ForeignKey(Juego, on_delete=models.CASCADE)
+    rating = models.SmallIntegerField(verbose_name='Puntuación')
+
+    def __str__(self):
+        return str(self.rating) 

@@ -16,13 +16,21 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 from main import views
+from django.contrib.auth import views as auth_views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('',views.inicio),
     path('carga/',views.carga),
+    path('loadRS/', views.loadRS),
     path('juegos/',views.lista_juegos),
     path('busquedatitulo/',views.buscar_juegoportitulo),
     path('busquedagenero/',views.buscar_juegosporgenero),
-    path('busquedafecha/',views.buscar_juegosporfecha)
+    path('busquedafecha/',views.buscar_juegosporfecha),
+    path('juegosrecomendados/',views.recomendar_juegos),
+    path('login/', auth_views.LoginView.as_view(template_name='login.html'), name='login'),
+    path('logout/', auth_views.LogoutView.as_view()),
+    path('signup/', views.SignUpView.as_view(), name='signup')
 ]
+
+

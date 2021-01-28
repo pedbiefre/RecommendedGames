@@ -1,5 +1,5 @@
 #encoding:utf-8
-from main.models import Genero,Juego
+from main.models import Genero,Juego,Puntuacion
 from django.shortcuts import render,redirect
 from bs4 import BeautifulSoup
 from urllib.request import Request, urlopen
@@ -10,6 +10,18 @@ from whoosh.fields import KEYWORD, Schema, TEXT, DATETIME, NUMERIC
 from whoosh.qparser import QueryParser, SingleQuotePlugin
 from whoosh import qparser
 from main.forms import BusquedaPorTituloForm, BusquedaPorGeneroForm, BusquedaPorFechaForm
+from django.views import generic
+from django.contrib.auth.forms import UserCreationForm
+from django.urls import reverse_lazy
+from django.contrib.auth.models import User
+from main.recommendations import recommend_games, carga_similaridades
+
+path= "data"
+
+class SignUpView(generic.CreateView):
+    form_class = UserCreationForm
+    success_url = reverse_lazy('login')
+    template_name = 'signup.html'
 
 #aqui hacemos el scraping web y cargamos datos a la bd
 def populateDB():
@@ -18,6 +30,7 @@ def populateDB():
     num_juegos = 0
 
     #vaciamos BD
+    Puntuacion.objects.all().delete()
     Genero.objects.all().delete()
     Juego.objects.all().delete()
 
@@ -77,6 +90,17 @@ def populateDB():
         
     return ((num_juegos,num_generos,juegos))
 
+#metodo para hacer la carga de puntuaciones del .txt de la carpeta data
+def populatePuntuaciones():
+    file = open(path+'/puntuaciones.txt','r')
+    puntuaciones = []
+    for line in file:
+        valores = line.strip("\n").split(',')
+        p = Puntuacion.objects.create(user=User.objects.get(id=int(valores[0])),juego=Juego.objects.get(titulo=valores[1]),rating=int(valores[2]))
+        puntuaciones.append(p)
+    file.close()
+    print(str(len(puntuaciones))+ " puntuaciones creadas")
+
 #carga los datos desde la web en BD
 def carga(request):
     if request.method=='POST':
@@ -94,9 +118,9 @@ def carga(request):
             writer = ix.writer()
             i=0
             num_juegos, num_generos,juegos = populateDB()
+            populatePuntuaciones()
             
             for juego in juegos:
-                print(juego[5])
                 writer.add_document(titulo=str(juego[0]),caratula=juego[1],descripcion=juego[2],
                 release=juego[3],precio=float(juego[4]),generos=str(",".join(juego[5])))
                 i= i + 1
@@ -109,6 +133,10 @@ def carga(request):
             return redirect("/")
 
     return render(request, 'confirmacion.html')
+#carga el sistema de recomendacion
+def loadRS(request):
+    carga_similaridades()
+    return render(request,'loadRS.html')
 
 #muestra el número de juegos que hay en BD
 def inicio(request):
@@ -190,4 +218,11 @@ def buscar_juegosporfecha(request):
                     juegos.append(aux)
     
     return render(request, 'juegosbusquedaporfecha.html', {'formulario':formulario, 'juegos':juegos})
+
+#A través del sistema de recomendación, recomendamos 5 juegos para el usuario loggeado que no hayan sido puntuados
+def recomendar_juegos(request):
+    user_id = int(request.user.id)
+    juegos= recommend_games(user_id)
+    return render(request,'juegosrecomendados.html',{'juegos': juegos})
+
 
