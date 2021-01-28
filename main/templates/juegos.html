@@ -12,10 +12,10 @@
 				<br></br>
 				<dt><b>Titulo: </b>{{row.titulo}} <b>Id: </b>{{row.id}}</dt>
 				<dd><img src='{{ row.cover_path }}' width="100" height="120" ><dd></dd>
-			    <dd> <b>Precio: </b>{{row.precio}} € | <b>Fecha de Lanzamiento: </b>{{row.release}} </dd>
+			    <dd> <b>Precio: </b>{{row.precio}} <b>€</b> | <b>Fecha de Lanzamiento: </b>{{row.release}} </dd>
 			    <dd> <b>Generos: </b>
 			    {% for gen in row.generos.all %}
-			    	{{gen.nombre}} 
+			    	{{gen.nombre}} <b>,</b>
 			    {% endfor %}
 				</dd>
 				<dd> <b>Descripción: </b> {{row.description}}
