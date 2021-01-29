@@ -5,3 +5,6 @@
 1,Hunt Showdown,5
 1,Dying Light,6
 1,Green Hell,8
+2,Football Manager 2021,8
+2,DiRT Rally 2.0,8
+2,Assetto Corsa,6

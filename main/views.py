@@ -90,17 +90,6 @@ def populateDB():
         
     return ((num_juegos,num_generos,juegos))
 
-#metodo para hacer la carga de puntuaciones del .txt de la carpeta data
-def populatePuntuaciones():
-    file = open(path+'/puntuaciones.txt','r')
-    puntuaciones = []
-    for line in file:
-        valores = line.strip("\n").split(',')
-        p = Puntuacion.objects.create(user=User.objects.get(id=int(valores[0])),juego=Juego.objects.get(titulo=valores[1]),rating=int(valores[2]))
-        puntuaciones.append(p)
-    file.close()
-    print(str(len(puntuaciones))+ " puntuaciones creadas")
-
 #carga los datos desde la web en BD
 def carga(request):
     if request.method=='POST':
@@ -118,7 +107,6 @@ def carga(request):
             writer = ix.writer()
             i=0
             num_juegos, num_generos,juegos = populateDB()
-            populatePuntuaciones()
             
             for juego in juegos:
                 writer.add_document(titulo=str(juego[0]),caratula=juego[1],descripcion=juego[2],
@@ -133,8 +121,21 @@ def carga(request):
             return redirect("/")
 
     return render(request, 'confirmacion.html')
+
+#metodo para hacer la carga de puntuaciones del .txt de la carpeta data
+def populatePuntuaciones():
+    file = open(path+'/puntuaciones.txt','r')
+    puntuaciones = []
+    for line in file:
+        valores = line.strip("\n").split(',')
+        p = Puntuacion.objects.create(user=User.objects.get(id=int(valores[0])),juego=Juego.objects.get(titulo=valores[1]),rating=int(valores[2]))
+        puntuaciones.append(p)
+    file.close()
+    print(str(len(puntuaciones))+ " puntuaciones creadas")
+
 #carga el sistema de recomendacion
 def loadRS(request):
+    populatePuntuaciones()
     carga_similaridades()
     return render(request,'loadRS.html')
 
