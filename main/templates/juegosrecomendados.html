@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+
+{% block encabezado %}
+<h1> Juegos recomendados </h1>
+{% endblock %}
+
+  {% block contenido %}
+        <h2>Lista de juegos más recomendados y su puntuación</h2>
+			{% for juego,puntuacion in juegos %}
+            <li><b>{{ juego }}:</b> {{ puntuacion}} %</p></li>			    
+			{% endfor %}
+  {% endblock %}

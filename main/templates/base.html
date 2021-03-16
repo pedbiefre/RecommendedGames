@@ -3,16 +3,29 @@
 <head>
   <meta charset='utf-8'>
   <style>
-    {% block style_css %}{% endblock %}
+  {% block style_css %}{% endblock %}
   </style>
 </head>
 <body>
   <header> 
   	{% block encabezado %}{% endblock %}
-
  			<dd><a href='/'>Inicio</a></dd>
-			<dd><a href='/juegos'>Lista de Juegos</a></dd>
-			<dd><a href='/carga'>Cargar la BD</a></dd>
+      <dd><a href='/juegos'>Lista de Juegos</a></dd>
+      <dd><a href='/busquedatitulo'>Buscar juego por titulo</a></dd>
+      <dd><a href='/busquedagenero'>Buscar juego por genero</a></dd>
+      <dd><a href='/busquedafecha'>Buscar juego por fecha</a></dd>
+      {%if user.is_authenticated %}
+      <dd><a href='/juegosrecomendados'>Recomendar juegos</a></dd>
+      {% endif %}
+      <dd><a href='/carga'>Cargar la BD</a></dd>
+      <dd><a href='/loadRS'>Cargar el sistema de recomendación</a></dd>
+      {%if user.is_authenticated %}
+      <dd><a href='/logout'>Logout</a> <a> as </a>  {{user.username}} <a> with id </a>  {{user.id}}</dd>
+      {% endif %}
+      {%if user.is_authenticated is not True%}
+      <dd><a href='/login'>Login</a></dd>
+      <dd><a href='/signup'>Sign-up</a></dd>
+      {% endif %}
 	<hr>
   </header>
   <section>
